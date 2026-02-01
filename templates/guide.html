@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - Gifomatic</title>
+    <meta name="description" content="Complete guide on how to use Gifomatic - Automatic Video to GIF Converter">
+    <meta name="author" content="SV - Call O Buzz Services">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/guide.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">&#127916;</span>
+                <div class="logo-text">
+                    <h1>Gifomatic</h1>
+                    <span class="logo-tagline">by COB</span>
+                </div>
+            </div>
+            <p class="header-description">Automatically split videos into GIFs using intelligent scene detection</p>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/guide" class="nav-link active">User Guide</a>
+            </nav>
+        </header>
+
+        <!-- Guide Content -->
+        <div class="guide-container">
+            <!-- Table of Contents -->
+            <aside class="guide-toc">
+                <h3>Contents</h3>
+                <ul>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#getting-started">Getting Started</a></li>
+                    <li><a href="#upload-video">Step 1: Upload Video</a></li>
+                    <li><a href="#settings">Step 2: Configure Settings</a></li>
+                    <li><a href="#processing">Step 3: Processing</a></li>
+                    <li><a href="#browse-gifs">Step 4: Browse GIFs</a></li>
+                    <li><a href="#select-gifs">Step 5: Select GIFs</a></li>
+                    <li><a href="#merge-gifs">Step 6: Merge GIFs</a></li>
+                    <li><a href="#download">Step 7: Download</a></li>
+                    <li><a href="#gallery-view">Gallery View</a></li>
+                    <li><a href="#previous-jobs">Previous Jobs</a></li>
+                    <li><a href="#specifications">Specifications</a></li>
+                    <li><a href="#tips">Tips & Best Practices</a></li>
+                    <li><a href="#troubleshooting">Troubleshooting</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </aside>
+
+            <!-- Main Guide Content -->
+            <main class="guide-content">
+                <!-- Overview Section -->
+                <section id="overview" class="guide-section">
+                    <h2>&#128214; Overview</h2>
+                    <div class="section-content">
+                        <p><strong>Gifomatic</strong> is a powerful web application that automatically converts videos into GIFs using intelligent scene detection. Simply upload a video, and Gifomatic will:</p>
+                        <ol>
+                            <li>Analyze your video to detect scene changes</li>
+                            <li>Split the video into clips at scene boundaries</li>
+                            <li>Convert each clip into an optimized GIF</li>
+                            <li>Stream results to you in real-time</li>
+                        </ol>
+                        <div class="highlight-box">
+                            <strong>&#128161; Key Benefit:</strong> No manual work required! Gifomatic intelligently detects where scenes change in your video, ensuring each GIF captures a complete moment.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Features Section -->
+                <section id="features" class="guide-section">
+                    <h2>&#10024; Features</h2>
+                    <div class="section-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">&#127916;</div>
+                                <h4>Smart Scene Detection</h4>
+                                <p>Uses AI-powered PySceneDetect to automatically find scene changes in your video</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#9202;</div>
+                                <h4>Configurable Settings</h4>
+                                <p>Customize duration (1-30s), width (320-1920px), FPS (5-30), and scene sensitivity</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128260;</div>
+                                <h4>Real-time Streaming</h4>
+                                <p>Watch GIFs appear as they're created - no waiting for full processing</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128444;</div>
+                                <h4>Gallery View</h4>
+                                <p>Click any GIF to view it full-size with keyboard navigation</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128279;</div>
+                                <h4>Merge GIFs</h4>
+                                <p>Combine multiple GIFs into one continuous animation</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128190;</div>
+                                <h4>Batch Download</h4>
+                                <p>Download individual, selected, or all GIFs at once</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128451;</div>
+                                <h4>Smart Caching</h4>
+                                <p>Previously processed videos load instantly from cache</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128241;</div>
+                                <h4>Responsive Design</h4>
+                                <p>Works seamlessly on desktop, tablet, and mobile devices</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Getting Started -->
+                <section id="getting-started" class="guide-section">
+                    <h2>&#128640; Getting Started</h2>
+                    <div class="section-content">
+                        <p>Before using Gifomatic, make sure you have a video file ready. Check the supported formats below:</p>
+
+                        <h3>Supported Video Formats</h3>
+                        <div class="format-tags">
+                            <span class="format-tag">MP4</span>
+                            <span class="format-tag">AVI</span>
+                            <span class="format-tag">MOV</span>
+                            <span class="format-tag">MKV</span>
+                            <span class="format-tag">WebM</span>
+                            <span class="format-tag">FLV</span>
+                            <span class="format-tag">WMV</span>
+                        </div>
+
+                        <h3>Recommended Video Specs</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td>Maximum File Size</td>
+                                <td>500 MB (recommended for smooth processing)</td>
+                            </tr>
+                            <tr>
+                                <td>Video Length</td>
+                                <td>Any length (longer videos take more time)</td>
+                            </tr>
+                            <tr>
+                                <td>Resolution</td>
+                                <td>Any (output scaled based on your settings, 320-1920px)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Step 1: Upload Video -->
+                <section id="upload-video" class="guide-section">
+                    <h2>&#128228; Step 1: Upload Video</h2>
+                    <div class="section-content">
+                        <div class="step-instructions">
+                            <div class="step-number">1</div>
+                            <div class="step-details">
+                                <h4>Click the Upload Area</h4>
+                                <p>On the home page, click the <strong>"Choose a video file"</strong> button or drag and drop your video file onto the upload area.</p>
+                            </div>
+                        </div>
+                        <div class="step-instructions">
+                            <div class="step-number">2</div>
+                            <div class="step-details">
+                                <h4>Select Your Video</h4>
+                                <p>Browse your computer and select a video file. The filename will appear below the upload area.</p>
+                            </div>
+                        </div>
+                        <div class="step-instructions">
+                            <div class="step-number">3</div>
+                            <div class="step-details">
+                                <h4>Click Process Video</h4>
+                                <p>Once a file is selected, the <strong>"Process Video"</strong> button becomes active. Click it to start processing.</p>
+                            </div>
+                        </div>
+                        <div class="tip-box">
+                            <strong>&#128161; Tip:</strong> If you've processed this video before with the same settings, Gifomatic will automatically load it from cache - no reprocessing needed!
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 2: Configure Settings -->
+                <section id="settings" class="guide-section">
+                    <h2>&#9881; Step 2: Configure Settings</h2>
+                    <div class="section-content">
+                        <p>Before processing, you can customize how your GIFs are generated. Click on <strong>"GIF Settings"</strong> to expand the configuration panel.</p>
+
+                        <h3>Available Settings</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td><strong>Max Duration</strong></td>
+                                <td>1-30 seconds. Longer scenes are split into chunks of this duration. Default: 5s</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GIF Width</strong></td>
+                                <td>320px to 1920px. Higher = better quality, larger files. Default: 480px</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Frame Rate (FPS)</strong></td>
+                                <td>5-30 FPS. Higher = smoother, larger files. Default: 10 FPS</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Scene Sensitivity</strong></td>
+                                <td>10-60. Lower = more scenes detected. Default: 30</td>
+                            </tr>
+                        </table>
+
+                        <h3>Quick Presets</h3>
+                        <p>Use presets for common use cases:</p>
+                        <div class="tabs-explanation">
+                            <div class="tab-card">
+                                <h4>Small Files</h4>
+                                <p>320px, 5 FPS, 3s max. Best for quick sharing, minimal file size.</p>
+                            </div>
+                            <div class="tab-card">
+                                <h4>Balanced</h4>
+                                <p>480px, 10 FPS, 5s max. Good quality with reasonable file size. (Default)</p>
+                            </div>
+                            <div class="tab-card">
+                                <h4>HD Quality</h4>
+                                <p>720px, 15 FPS, 5s max. High quality for presentations.</p>
+                            </div>
+                            <div class="tab-card">
+                                <h4>Maximum</h4>
+                                <p>1080px, 24 FPS, 10s max. Best quality, largest files.</p>
+                            </div>
+                        </div>
+
+                        <div class="warning-box">
+                            <strong>&#9888; File Size Warning:</strong> Higher quality settings create significantly larger GIFs. A 1080px, 24 FPS GIF can be 10-50x larger than a 320px, 5 FPS version.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 3: Processing -->
+                <section id="processing" class="guide-section">
+                    <h2>&#9881; Step 3: Processing</h2>
+                    <div class="section-content">
+                        <p>After clicking "Process Video", Gifomatic performs several operations:</p>
+
+                        <div class="process-flow">
+                            <div class="process-step">
+                                <div class="process-icon">&#128194;</div>
+                                <h4>Upload</h4>
+                                <p>Video is uploaded to the server</p>
+                            </div>
+                            <div class="process-arrow">&#10132;</div>
+                            <div class="process-step">
+                                <div class="process-icon">&#128269;</div>
+                                <h4>Analyze</h4>
+                                <p>Scene detection scans for cuts</p>
+                            </div>
+                            <div class="process-arrow">&#10132;</div>
+                            <div class="process-step">
+                                <div class="process-icon">&#9986;</div>
+                                <h4>Split</h4>
+                                <p>Video split at scene boundaries</p>
+                            </div>
+                            <div class="process-arrow">&#10132;</div>
+                            <div class="process-step">
+                                <div class="process-icon">&#127912;</div>
+                                <h4>Convert</h4>
+                                <p>Each clip becomes a GIF</p>
+                            </div>
+                        </div>
+
+                        <p>You can monitor progress in two ways:</p>
+                        <ul>
+                            <li><strong>Progress Bar:</strong> Shows overall status on the page</li>
+                            <li><strong>Terminal Logs:</strong> Detailed progress in the server console</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <strong>&#128260; Real-time Updates:</strong> GIFs appear on the page as soon as they're created. You don't have to wait for all processing to complete!
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 4: Browse GIFs -->
+                <section id="browse-gifs" class="guide-section">
+                    <h2>&#128444; Step 4: Browse GIFs</h2>
+                    <div class="section-content">
+                        <p>Once processing begins, GIFs appear in a responsive grid layout. The interface has two tabs:</p>
+
+                        <div class="tabs-explanation">
+                            <div class="tab-card">
+                                <h4>&#127912; Original GIFs</h4>
+                                <p>All GIFs generated from your video, displayed in chronological order. This is where you select GIFs for merging or downloading.</p>
+                            </div>
+                            <div class="tab-card">
+                                <h4>&#128279; Merged GIFs</h4>
+                                <p>GIFs you've created by merging multiple original GIFs. These are saved and persist even after refresh.</p>
+                            </div>
+                        </div>
+
+                        <h3>GIF Card Information</h3>
+                        <p>Each GIF card shows:</p>
+                        <ul>
+                            <li><strong>GIF Preview:</strong> Animated preview of the GIF</li>
+                            <li><strong>Filename:</strong> Shows at the bottom (e.g., clip_0001.gif)</li>
+                            <li><strong>Download Icon:</strong> Appears on hover (top-right corner)</li>
+                            <li><strong>Selection State:</strong> Purple border when selected</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Step 5: Select GIFs -->
+                <section id="select-gifs" class="guide-section">
+                    <h2>&#9989; Step 5: Select GIFs</h2>
+                    <div class="section-content">
+                        <h3>Selection Methods</h3>
+
+                        <div class="method-card">
+                            <h4>&#128433; Click to Select</h4>
+                            <p>Click anywhere on a GIF card (except the image itself) to toggle selection. Selected GIFs show a purple border and checkmark overlay.</p>
+                        </div>
+
+                        <div class="method-card">
+                            <h4>&#128450; Select All</h4>
+                            <p>Click the <strong>"Select All"</strong> button in the action bar to select all GIFs at once.</p>
+                        </div>
+
+                        <div class="method-card">
+                            <h4>&#10060; Unselect All</h4>
+                            <p>Click <strong>"Unselect All"</strong> to clear all selections.</p>
+                        </div>
+
+                        <h3>Action Bar</h3>
+                        <p>The floating action bar at the bottom shows:</p>
+                        <ul>
+                            <li><strong>Selection Count:</strong> "X selected" or total GIF count</li>
+                            <li><strong>Select All / Unselect All:</strong> Batch selection buttons</li>
+                            <li><strong>Download Selected:</strong> Download only selected GIFs</li>
+                            <li><strong>Download All:</strong> Download all GIFs in current tab</li>
+                            <li><strong>Merge Selected:</strong> Combine selected GIFs (requires 2+)</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Step 6: Merge GIFs -->
+                <section id="merge-gifs" class="guide-section">
+                    <h2>&#128279; Step 6: Merge GIFs</h2>
+                    <div class="section-content">
+                        <p>The merge feature combines multiple GIFs into one continuous animation, playing them in sequence.</p>
+
+                        <h3>How to Merge</h3>
+                        <div class="step-instructions">
+                            <div class="step-number">1</div>
+                            <div class="step-details">
+                                <h4>Select GIFs</h4>
+                                <p>Select 2 or more GIFs you want to merge. They will be combined in filename order (clip_0001, clip_0002, etc.).</p>
+                            </div>
+                        </div>
+                        <div class="step-instructions">
+                            <div class="step-number">2</div>
+                            <div class="step-details">
+                                <h4>Click Merge Selected</h4>
+                                <p>The button activates when 2+ GIFs are selected. Click it to start merging.</p>
+                            </div>
+                        </div>
+                        <div class="step-instructions">
+                            <div class="step-number">3</div>
+                            <div class="step-details">
+                                <h4>View Result</h4>
+                                <p>After merging, you're automatically switched to the "Merged GIFs" tab where your new GIF appears.</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <strong>&#128161; Tip:</strong> Selections are automatically cleared after merging, so you can quickly select and merge another set.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 7: Download -->
+                <section id="download" class="guide-section">
+                    <h2>&#128229; Step 7: Download</h2>
+                    <div class="section-content">
+                        <h3>Download Options</h3>
+
+                        <div class="download-options">
+                            <div class="download-option">
+                                <div class="option-icon">&#128190;</div>
+                                <h4>Individual Download</h4>
+                                <p>Hover over any GIF and click the download icon in the top-right corner.</p>
+                            </div>
+                            <div class="download-option">
+                                <div class="option-icon">&#128230;</div>
+                                <h4>Download Selected</h4>
+                                <p>Select multiple GIFs, then click "Download Selected" to download them all.</p>
+                            </div>
+                            <div class="download-option">
+                                <div class="option-icon">&#128451;</div>
+                                <h4>Download All</h4>
+                                <p>Click "Download All" to download every GIF in the current tab.</p>
+                            </div>
+                        </div>
+
+                        <div class="warning-box">
+                            <strong>&#9888; Note:</strong> Batch downloads trigger multiple file saves. Your browser may ask for permission to download multiple files.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Gallery View -->
+                <section id="gallery-view" class="guide-section">
+                    <h2>&#128444; Gallery View (Lightbox)</h2>
+                    <div class="section-content">
+                        <p>Click on any GIF image to open it in the full-screen gallery view.</p>
+
+                        <h3>Gallery Controls</h3>
+                        <table class="controls-table">
+                            <tr>
+                                <th>Action</th>
+                                <th>Mouse</th>
+                                <th>Keyboard</th>
+                            </tr>
+                            <tr>
+                                <td>Open Gallery</td>
+                                <td>Click on GIF image</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Close Gallery</td>
+                                <td>Click X or outside image</td>
+                                <td>Escape</td>
+                            </tr>
+                            <tr>
+                                <td>Previous GIF</td>
+                                <td>Click left arrow</td>
+                                <td>Left Arrow &#8592;</td>
+                            </tr>
+                            <tr>
+                                <td>Next GIF</td>
+                                <td>Click right arrow</td>
+                                <td>Right Arrow &#8594;</td>
+                            </tr>
+                        </table>
+
+                        <h3>Gallery Information</h3>
+                        <p>The gallery shows:</p>
+                        <ul>
+                            <li><strong>Full-size GIF:</strong> Displayed at original resolution</li>
+                            <li><strong>Filename:</strong> Shown below the image</li>
+                            <li><strong>Counter:</strong> Position in gallery (e.g., "3 / 12")</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Previous Jobs -->
+                <section id="previous-jobs" class="guide-section">
+                    <h2>&#128451; Previous Jobs</h2>
+                    <div class="section-content">
+                        <p>Gifomatic saves all processed videos. You can reload them without reprocessing.</p>
+
+                        <h3>How It Works</h3>
+                        <ul>
+                            <li><strong>Automatic Caching:</strong> When you upload a video, Gifomatic creates a unique fingerprint including your settings. If you upload the same video with the same settings, it loads from cache instantly.</li>
+                            <li><strong>Settings-Aware:</strong> Different settings create different cache entries. Processing the same video at 480px vs 1080px creates two separate cached results.</li>
+                            <li><strong>Previous Jobs Section:</strong> Shows all previously processed videos below the upload area.</li>
+                            <li><strong>One-Click Load:</strong> Click any job to load its GIFs immediately.</li>
+                        </ul>
+
+                        <h3>What's Saved</h3>
+                        <ul>
+                            <li>All original GIFs (clip_xxxx.gif)</li>
+                            <li>All merged GIFs (merged_xxxx.gif)</li>
+                            <li>Video fingerprint + settings combination for cache matching</li>
+                        </ul>
+
+                        <div class="tip-box">
+                            <strong>&#128161; Tip:</strong> Processing the same video with different settings will create a new job. To reprocess with identical settings, delete the job folder from <code>output/</code> and its entry from <code>cache.json</code>.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Specifications -->
+                <section id="specifications" class="guide-section">
+                    <h2>&#128295; Specifications</h2>
+                    <div class="section-content">
+                        <h3>Input Specifications</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td>Supported Formats</td>
+                                <td>MP4, AVI, MOV, MKV, WebM, FLV, WMV</td>
+                            </tr>
+                            <tr>
+                                <td>Max File Size</td>
+                                <td>500 MB recommended (no hard limit)</td>
+                            </tr>
+                            <tr>
+                                <td>Video Length</td>
+                                <td>Unlimited</td>
+                            </tr>
+                        </table>
+
+                        <h3>Output Specifications (Configurable)</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td>Format</td>
+                                <td>GIF (optimized)</td>
+                            </tr>
+                            <tr>
+                                <td>Width</td>
+                                <td>320-1920 pixels (default: 480px, height auto-scaled)</td>
+                            </tr>
+                            <tr>
+                                <td>Frame Rate</td>
+                                <td>5-30 FPS (default: 10 FPS)</td>
+                            </tr>
+                            <tr>
+                                <td>Max Duration</td>
+                                <td>1-30 seconds per GIF (default: 5s)</td>
+                            </tr>
+                            <tr>
+                                <td>Loop</td>
+                                <td>Infinite</td>
+                            </tr>
+                        </table>
+
+                        <h3>Processing Settings (Configurable)</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td>Scene Detection</td>
+                                <td>ContentDetector (threshold: 10-60, default: 30)</td>
+                            </tr>
+                            <tr>
+                                <td>Long Scene Handling</td>
+                                <td>Auto-split at configured max duration</td>
+                            </tr>
+                            <tr>
+                                <td>Scaling Algorithm</td>
+                                <td>Fast Bilinear</td>
+                            </tr>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Tips & Best Practices -->
+                <section id="tips" class="guide-section">
+                    <h2>&#128161; Tips & Best Practices</h2>
+                    <div class="section-content">
+                        <div class="tips-grid">
+                            <div class="tip-card">
+                                <h4>&#127916; Video Quality</h4>
+                                <p>Higher quality videos produce better GIFs. If possible, use the original video file rather than a compressed version.</p>
+                            </div>
+                            <div class="tip-card">
+                                <h4>&#9202; Video Length</h4>
+                                <p>For quick results, use shorter videos (under 5 minutes). Longer videos work but take more time to process.</p>
+                            </div>
+                            <div class="tip-card">
+                                <h4>&#127912; Scene-Rich Videos</h4>
+                                <p>Videos with lots of cuts (like trailers or compilations) work great! Each scene becomes its own GIF.</p>
+                            </div>
+                            <div class="tip-card">
+                                <h4>&#128279; Strategic Merging</h4>
+                                <p>Merge GIFs that tell a story together. Select them in the order you want them to play.</p>
+                            </div>
+                            <div class="tip-card">
+                                <h4>&#128190; File Size</h4>
+                                <p>GIF file sizes vary based on content. High-motion scenes create larger files.</p>
+                            </div>
+                            <div class="tip-card">
+                                <h4>&#128187; Browser Performance</h4>
+                                <p>If you have many GIFs, older devices may lag. Use the gallery view for smoother playback.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Troubleshooting -->
+                <section id="troubleshooting" class="guide-section">
+                    <h2>&#128295; Troubleshooting</h2>
+                    <div class="section-content">
+                        <div class="faq-item">
+                            <h4>&#10067; Video won't upload</h4>
+                            <p><strong>Solution:</strong> Check that your file format is supported (MP4, AVI, MOV, MKV, WebM, FLV, WMV). Try a different browser if issues persist.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>&#10067; Processing seems stuck</h4>
+                            <p><strong>Solution:</strong> Check the terminal/console for error messages. Scene detection can take time for long videos. FFmpeg must be installed and accessible.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>&#10067; GIFs not appearing</h4>
+                            <p><strong>Solution:</strong> Ensure FFmpeg is properly installed. Check terminal for "FFmpeg not found" errors. Restart the application after installing FFmpeg.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>&#10067; Poor GIF quality</h4>
+                            <p><strong>Solution:</strong> Use the "GIF Settings" panel to increase width (up to 1920px) and FPS (up to 30) before processing. Note that higher quality means larger file sizes.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>&#10067; Cache not working</h4>
+                            <p><strong>Solution:</strong> Ensure <code>cache.json</code> is writable. The video fingerprint is based on the first 10MB - identical starts but different content won't match.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>&#10067; Merge fails</h4>
+                            <p><strong>Solution:</strong> Ensure all selected GIFs exist and are valid. Check terminal for FFmpeg error messages.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- FAQ -->
+                <section id="faq" class="guide-section">
+                    <h2>&#10068; Frequently Asked Questions</h2>
+                    <div class="section-content">
+                        <div class="faq-item">
+                            <h4>Q: Is there a limit to how many GIFs I can create?</h4>
+                            <p><strong>A:</strong> No limit! The number of GIFs depends on your video length and scene changes.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>Q: Can I change the GIF quality settings?</h4>
+                            <p><strong>A:</strong> Yes! Use the "GIF Settings" panel before processing to adjust duration (1-30s), width (320-1920px), FPS (5-30), and scene sensitivity.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>Q: Why are some GIFs shorter than my max duration?</h4>
+                            <p><strong>A:</strong> GIFs are split at scene boundaries. If a scene is only 2 seconds, the GIF will be 2 seconds regardless of the max duration setting.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>Q: Can I process multiple videos at once?</h4>
+                            <p><strong>A:</strong> Currently, one video at a time. Wait for processing to complete before uploading another.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>Q: Where are my GIFs stored?</h4>
+                            <p><strong>A:</strong> In the <code>output/</code> folder, organized by job ID. Each job has its own subfolder.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>Q: Can I run this on a server?</h4>
+                            <p><strong>A:</strong> Yes! Use Docker or set <code>FLASK_ENV=production</code>. See the README for deployment instructions.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>Q: Is my video data private?</h4>
+                            <p><strong>A:</strong> Yes! All processing happens locally on your machine. Videos are deleted after processing; only GIFs are kept.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Back to Top -->
+                <div class="back-to-top">
+                    <a href="#overview">&#8593; Back to Top</a>
+                </div>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="logo-icon-small">&#127916;</span>
+                    <span>Gifomatic</span>
+                </div>
+                <p class="made-with">
+                    Made with <span class="heart">&#10084;</span> by <strong>COB</strong>
+                </p>
+                <p class="author-info">
+                    Author: <strong>SV</strong> |
+                    <a href="https://callobuzz.com" target="_blank" rel="noopener noreferrer">Call O Buzz Services</a>
+                </p>
+                <p class="footer-links">
+                    <a href="/">Home</a> |
+                    <a href="/guide">User Guide</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

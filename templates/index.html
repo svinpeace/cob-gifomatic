@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gifomatic - Automatic Video to GIF Converter</title>
+    <meta name="description" content="Automatically split videos into GIFs using intelligent scene detection">
+    <meta name="author" content="SV - Call O Buzz Services">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">&#127916;</span>
+                <div class="logo-text">
+                    <h1>Gifomatic</h1>
+                    <span class="logo-tagline">by COB</span>
+                </div>
+            </div>
+            <p class="header-description">Automatically split videos into GIFs using intelligent scene detection</p>
+            <nav class="header-nav">
+                <a href="/" class="nav-link active">Home</a>
+                <a href="/guide" class="nav-link">User Guide</a>
+            </nav>
+        </header>
+
+        <!-- Info Section -->
+        <section class="info-section">
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon">&#128196;</div>
+                    <div class="info-content">
+                        <h4>Supported Formats</h4>
+                        <p>MP4, AVI, MOV, MKV, WebM, FLV, WMV</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">&#128190;</div>
+                    <div class="info-content">
+                        <h4>Max File Size</h4>
+                        <p>Recommended &lt; 500MB</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">&#9202;</div>
+                    <div class="info-content">
+                        <h4>GIF Duration</h4>
+                        <p>1-30 seconds (configurable)</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">&#127912;</div>
+                    <div class="info-content">
+                        <h4>Output Quality</h4>
+                        <p>Up to 1920px, 5-30 FPS</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="upload-section">
+            <form id="upload-form">
+                <div class="file-input-wrapper">
+                    <input type="file" id="video-input" name="video" accept="video/*">
+                    <label for="video-input" class="file-label">
+                        <span class="file-icon">&#128249;</span>
+                        <span class="file-text">Choose a video file</span>
+                    </label>
+                    <span id="file-name" class="file-name"></span>
+                </div>
+
+                <!-- GIF Settings -->
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <span class="settings-icon">&#9881;</span>
+                        <span>GIF Settings</span>
+                        <button type="button" id="settings-toggle" class="settings-toggle">
+                            <span class="toggle-icon">&#9660;</span>
+                        </button>
+                    </div>
+                    <div id="settings-panel" class="settings-panel">
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label for="max-duration">Max Duration</label>
+                                <div class="setting-input-group">
+                                    <input type="range" id="max-duration" name="max_duration" min="1" max="30" value="5" step="1">
+                                    <span id="max-duration-value" class="setting-value">5s</span>
+                                </div>
+                                <span class="setting-hint">Maximum seconds per GIF clip</span>
+                            </div>
+                            <div class="setting-item">
+                                <label for="gif-width">GIF Width</label>
+                                <div class="setting-input-group">
+                                    <select id="gif-width" name="width">
+                                        <option value="320">320px (Small)</option>
+                                        <option value="480" selected>480px (Standard)</option>
+                                        <option value="640">640px (Large)</option>
+                                        <option value="720">720px (HD)</option>
+                                        <option value="1080">1080px (Full HD)</option>
+                                        <option value="1920">1920px (4K Width)</option>
+                                    </select>
+                                </div>
+                                <span class="setting-hint">Higher = better quality, larger file</span>
+                            </div>
+                            <div class="setting-item">
+                                <label for="gif-fps">Frame Rate</label>
+                                <div class="setting-input-group">
+                                    <select id="gif-fps" name="fps">
+                                        <option value="5">5 FPS (Smallest)</option>
+                                        <option value="10" selected>10 FPS (Standard)</option>
+                                        <option value="15">15 FPS (Smooth)</option>
+                                        <option value="20">20 FPS (Very Smooth)</option>
+                                        <option value="24">24 FPS (Cinematic)</option>
+                                        <option value="30">30 FPS (Ultra Smooth)</option>
+                                    </select>
+                                </div>
+                                <span class="setting-hint">Higher = smoother, larger file</span>
+                            </div>
+                            <div class="setting-item">
+                                <label for="scene-threshold">Scene Sensitivity</label>
+                                <div class="setting-input-group">
+                                    <input type="range" id="scene-threshold" name="threshold" min="10" max="60" value="30" step="5">
+                                    <span id="threshold-value" class="setting-value">30</span>
+                                </div>
+                                <span class="setting-hint">Lower = more scene cuts detected</span>
+                            </div>
+                        </div>
+                        <div class="settings-presets">
+                            <span class="presets-label">Quick Presets:</span>
+                            <button type="button" class="preset-btn" data-preset="small">Small Files</button>
+                            <button type="button" class="preset-btn" data-preset="balanced">Balanced</button>
+                            <button type="button" class="preset-btn" data-preset="hd">HD Quality</button>
+                            <button type="button" class="preset-btn" data-preset="max">Maximum</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="process-btn" disabled>Process Video</button>
+            </form>
+        </section>
+
+        <section id="previous-jobs" class="previous-jobs-section hidden">
+            <h3>Previous Jobs</h3>
+            <div id="jobs-list" class="jobs-list"></div>
+        </section>
+
+        <section id="progress-section" class="progress-section hidden">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p id="progress-text">Processing video...</p>
+            <div class="progress-actions">
+                <button type="button" id="cancel-btn" class="progress-btn cancel-btn" style="display: none;" onclick="cancelJob()">Cancel</button>
+                <button type="button" id="reprocess-btn" class="progress-btn reprocess-btn" style="display: none;" onclick="reprocessJob()">Reprocess</button>
+            </div>
+        </section>
+
+        <section id="gif-section" class="gif-section hidden">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button id="tab-original" class="tab active" data-tab="original">
+                    Original GIFs <span id="gif-count" class="tab-count">0</span>
+                </button>
+                <button id="tab-merged" class="tab" data-tab="merged">
+                    Merged GIFs <span id="merged-count" class="tab-count">0</span>
+                </button>
+            </div>
+
+            <!-- Original GIFs Tab Content -->
+            <div id="original-content" class="tab-content active">
+                <div id="gif-grid" class="gif-grid"></div>
+            </div>
+
+            <!-- Merged GIFs Tab Content -->
+            <div id="merged-content" class="tab-content">
+                <div id="merged-grid" class="gif-grid"></div>
+                <p id="no-merged" class="empty-message">No merged GIFs yet. Select GIFs and click "Merge Selected".</p>
+            </div>
+        </section>
+
+        <!-- Floating action bar -->
+        <div id="action-bar" class="action-bar hidden">
+            <div class="action-bar-content">
+                <span id="selection-info">0 selected</span>
+                <div class="action-buttons">
+                    <button id="select-all-btn" class="action-btn select-btn">
+                        Select All
+                    </button>
+                    <button id="unselect-all-btn" class="action-btn unselect-btn">
+                        Unselect All
+                    </button>
+                    <button id="download-selected-btn" class="action-btn download-btn">
+                        Download Selected
+                    </button>
+                    <button id="download-all-btn" class="action-btn download-all-btn">
+                        Download All
+                    </button>
+                    <button id="merge-btn" class="action-btn merge-btn">
+                        Merge Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="logo-icon-small">&#127916;</span>
+                    <span>Gifomatic</span>
+                </div>
+                <p class="made-with">
+                    Made with <span class="heart">&#10084;</span> by <strong>COB</strong>
+                </p>
+                <p class="author-info">
+                    Author: <strong>SV</strong> |
+                    <a href="https://callobuzz.com" target="_blank" rel="noopener noreferrer">Call O Buzz Services</a>
+                </p>
+                <p class="footer-links">
+                    <a href="/">Home</a> |
+                    <a href="/guide">User Guide</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Lightbox Gallery -->
+    <div id="lightbox" class="lightbox hidden">
+        <div class="lightbox-overlay"></div>
+        <button class="lightbox-close">&times;</button>
+        <button class="lightbox-prev">&#10094;</button>
+        <button class="lightbox-next">&#10095;</button>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Preview">
+        </div>
+        <div class="lightbox-info">
+            <span id="lightbox-filename"></span>
+            <span id="lightbox-counter"></span>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

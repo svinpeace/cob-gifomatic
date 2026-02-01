@@ -1,0 +1,17 @@
+# Video to GIF Splitter - Docker Compose Configuration
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: video-to-gif-splitter
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist output GIFs
+      - ./output:/app/output
+      # Persist cache
+      - ./cache.json:/app/cache.json
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
