@@ -40,22 +40,35 @@ cob-gifomatic/
 ## Key Files to Understand
 
 ### `app.py`
-- Flask application with routes: `/`, `/guide`, `/upload`, `/stream/<job_id>`, `/merge`, `/jobs`, `/load/<job_id>`
+- Flask application with routes: `/`, `/guide`, `/upload`, `/upload-preview`, `/start-processing`, `/stream/<job_id>`, `/merge`, `/jobs`, `/load/<job_id>`
 - Handles file uploads, caching, and SSE streaming
-- Settings are parsed from form data and passed to processor
+- Settings and crop parameters are parsed from JSON and passed to processor
+- `/upload-preview` returns video metadata and thumbnails for crop UI
+- `/start-processing` accepts settings + optional crop and starts processing
 
 ### `video_processor.py`
 - `detect_scenes()` - Uses PySceneDetect ContentDetector
 - `split_long_scenes()` - Splits scenes exceeding max duration
-- `extract_clip_as_gif()` - FFmpeg conversion to GIF
+- `extract_clip_as_gif()` - FFmpeg conversion to GIF (supports crop parameter)
 - `merge_gifs_grid()` - Concatenates multiple GIFs sequentially
-- `process_video()` - Main pipeline, accepts settings dict
+- `process_video()` - Main pipeline, accepts settings dict including crop
+- `get_video_metadata()` - Uses FFprobe to get video dimensions, duration, FPS
+- `extract_thumbnails()` - Extracts preview frames for crop UI
+- `validate_crop_settings()` - Validates crop bounds and ensures even numbers
 
 ### `static/app.js`
 - Handles form submission with settings
 - SSE event handling for real-time GIF display
 - Selection, merging, downloading logic
 - Lightbox gallery functionality
+- **Crop functionality:**
+  - `showCropUI()` - Displays crop section after upload
+  - `initCropCanvas()` - Sets up canvas and event listeners
+  - `selectThumbnail()` / `loadThumbnailImage()` - Thumbnail navigation
+  - `startCrop()` / `updateCrop()` / `endCrop()` - Mouse/touch drawing handlers
+  - `drawCropOverlay()` - Renders selection with dimmed outside area
+  - `convertToOriginalPixels()` - Scales canvas coords to video pixels
+  - `startProcessingWithSettings()` - Sends settings + crop to backend
 
 ## Configuration
 
@@ -77,10 +90,30 @@ All configuration is centralized in `config.py` and loaded from environment vari
 - `width`: 320-1920 pixels (default: 480)
 - `fps`: 5-30 (default: 10)
 - `threshold`: 10-60 scene sensitivity (default: 30)
+- `crop`: Optional region selection (x, y, width, height in original video pixels)
 
 ### Server settings (via .env):
 - See `.env.example` for all available options
 - Includes rate limits, file size limits, timeouts, etc.
+
+## Processing Flow
+
+### Standard Flow (with Crop)
+1. User uploads video → `POST /upload-preview`
+2. Backend extracts video metadata (FFprobe) and thumbnails (FFmpeg)
+3. Response includes: `job_id`, `video` (dimensions, duration, fps), `thumbnails` (URLs + timestamps)
+4. Frontend shows crop UI with thumbnail strip and canvas
+5. User optionally draws crop region on canvas
+6. User clicks "Start Processing" → `POST /start-processing` with settings + crop
+7. Backend validates crop, starts processing thread
+8. Frontend connects to SSE endpoint `/stream/<job_id>`
+9. GIFs appear in real-time as they're generated
+
+### Crop Parameter Flow
+- Canvas coordinates are scaled to original video pixels using `convertToOriginalPixels()`
+- Crop is validated server-side: bounds check, minimum size (64x64), even number rounding
+- FFmpeg filter chain: `crop=w:h:x:y,fps=N,scale=W:-1` (crop BEFORE scale)
+- Cache key includes crop parameters: `{hash}_{duration}_{fps}_{width}_{threshold}_{crop_x}_{crop_y}_{crop_w}_{crop_h}`
 
 ## Common Tasks
 
@@ -140,11 +173,13 @@ python app.py
 
 ## Important Notes
 
-1. **FFmpeg Required**: The app will not work without FFmpeg installed on the system
-2. **Caching is Settings-Aware**: Same video + different settings = different cache entries
+1. **FFmpeg & FFprobe Required**: The app needs both FFmpeg (for processing) and FFprobe (for metadata) installed
+2. **Caching is Settings & Crop Aware**: Same video + different settings or crop = different cache entries
 3. **No Database**: All state is file-based (cache.json, output folders)
 4. **SSE for Real-time**: GIFs stream to client as they're created
 5. **Videos are Deleted**: Source videos are removed after processing, only GIFs kept
+6. **Crop Flow**: Upload → Preview thumbnails → Select crop region (optional) → Process
+7. **Crop Validation**: Minimum size 64x64, values rounded to even numbers for codec compatibility
 
 ## When Making Changes
 

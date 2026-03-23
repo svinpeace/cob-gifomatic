@@ -8,19 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **High-quality GIF encoding** - Two-pass palette generation using FFmpeg's `palettegen`/`paletteuse` for dramatically better color accuracy and reduced graininess
+- **Original resolution option** - New "Original (No Scaling)" width option outputs GIFs at native video/crop dimensions with no quality loss from rescaling
+- **Video Cropping** - Select a region of your video before processing
+  - Thumbnail preview strip showing frames at different timestamps
+  - Interactive canvas-based crop selection with click-and-drag
+  - Real-time crop dimension display
+  - Touch support for mobile devices
+  - Reset, Skip (use full frame), and Confirm actions
+- New `/upload-preview` endpoint - Returns video metadata and thumbnails
+- New `/start-processing` endpoint - Processes video with settings and optional crop
+- FFprobe integration for accurate video metadata extraction
+- `get_video_metadata()` function to retrieve video dimensions, duration, and FPS
+- `extract_thumbnails()` function to generate preview frames
+- `validate_crop_settings()` function to ensure valid crop parameters
+- Crop parameters in FFmpeg filter chain (applied before scaling)
 - Configurable GIF settings via UI (width, FPS, duration, scene sensitivity)
 - Quick presets: Small Files, Balanced, HD Quality, Maximum
 - Settings-aware caching (different settings create separate cache entries)
+- Crop-aware caching (different crops create separate cache entries)
 - Collapsible settings panel with smooth animations
 - CLAUDE.md for AI assistant guidelines
 - CHANGELOG.md for tracking changes
 - CONTRIBUTING.md for contribution guidelines
 - CODE_OF_CONDUCT.md for community standards
+- New configuration options: `THUMBNAIL_COUNT`, `THUMBNAIL_WIDTH`, `MIN_CROP_SIZE`
 
 ### Changed
-- Updated User Guide with new settings documentation
+- GIF encoding now uses Lanczos scaling instead of fast bilinear for sharper output when resizing
+- Upload flow now shows crop UI before processing
+- Updated User Guide with crop feature documentation (new Step 3)
 - Info cards now show configurable ranges instead of fixed values
-- Cache key includes settings hash for proper cache invalidation
+- Cache key includes settings hash and crop parameters for proper cache invalidation
+- `/output/<job_id>/<filename>` now serves both GIFs and JPG thumbnails
 
 ## [1.1.0] - 2026-02-01
 

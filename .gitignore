@@ -65,6 +65,9 @@ cache.json
 /*.jpg
 /*.jpeg
 
+# Exception: README screenshot
+!opensource-github-gifomatic.png
+
 # Environment variables
 .env
 .env.local

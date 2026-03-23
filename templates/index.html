@@ -99,6 +99,7 @@
                                         <option value="720">720px (HD)</option>
                                         <option value="1080">1080px (Full HD)</option>
                                         <option value="1920">1920px (4K Width)</option>
+                                        <option value="0">Original (No Scaling)</option>
                                     </select>
                                 </div>
                                 <span class="setting-hint">Higher = better quality, larger file</span>
@@ -143,6 +144,50 @@
         <section id="previous-jobs" class="previous-jobs-section hidden">
             <h3>Previous Jobs</h3>
             <div id="jobs-list" class="jobs-list"></div>
+        </section>
+
+        <!-- Crop Section -->
+        <section id="crop-section" class="crop-section hidden">
+            <h3>Crop Region (Optional)</h3>
+            <p class="crop-description">Select a region to crop from your video. All GIFs will use this crop area.</p>
+
+            <!-- Thumbnail navigation -->
+            <div class="thumbnail-strip">
+                <div class="thumb-container" data-index="0">
+                    <img class="thumb" src="" alt="Frame 1">
+                    <span class="thumb-time">0:00</span>
+                </div>
+                <div class="thumb-container" data-index="1">
+                    <img class="thumb" src="" alt="Frame 2">
+                    <span class="thumb-time">0:00</span>
+                </div>
+                <div class="thumb-container" data-index="2">
+                    <img class="thumb" src="" alt="Frame 3">
+                    <span class="thumb-time">0:00</span>
+                </div>
+                <div class="thumb-container" data-index="3">
+                    <img class="thumb" src="" alt="Frame 4">
+                    <span class="thumb-time">0:00</span>
+                </div>
+            </div>
+
+            <!-- Crop canvas -->
+            <div class="crop-container">
+                <canvas id="crop-canvas"></canvas>
+                <div class="crop-instructions">Click and drag to select crop region</div>
+            </div>
+
+            <!-- Crop info -->
+            <div class="crop-info">
+                <span id="crop-dimensions">Full frame</span>
+            </div>
+
+            <!-- Actions -->
+            <div class="crop-actions">
+                <button type="button" id="reset-crop-btn" class="crop-btn reset-btn">Reset Crop</button>
+                <button type="button" id="skip-crop-btn" class="crop-btn skip-btn">Use Full Frame</button>
+                <button type="button" id="confirm-crop-btn" class="crop-btn confirm-btn">Start Processing</button>
+            </div>
         </section>
 
         <section id="progress-section" class="progress-section hidden">

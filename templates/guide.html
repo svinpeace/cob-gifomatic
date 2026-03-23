@@ -37,11 +37,12 @@
                     <li><a href="#getting-started">Getting Started</a></li>
                     <li><a href="#upload-video">Step 1: Upload Video</a></li>
                     <li><a href="#settings">Step 2: Configure Settings</a></li>
-                    <li><a href="#processing">Step 3: Processing</a></li>
-                    <li><a href="#browse-gifs">Step 4: Browse GIFs</a></li>
-                    <li><a href="#select-gifs">Step 5: Select GIFs</a></li>
-                    <li><a href="#merge-gifs">Step 6: Merge GIFs</a></li>
-                    <li><a href="#download">Step 7: Download</a></li>
+                    <li><a href="#crop-region">Step 3: Crop Region</a></li>
+                    <li><a href="#processing">Step 4: Processing</a></li>
+                    <li><a href="#browse-gifs">Step 5: Browse GIFs</a></li>
+                    <li><a href="#select-gifs">Step 6: Select GIFs</a></li>
+                    <li><a href="#merge-gifs">Step 7: Merge GIFs</a></li>
+                    <li><a href="#download">Step 8: Download</a></li>
                     <li><a href="#gallery-view">Gallery View</a></li>
                     <li><a href="#previous-jobs">Previous Jobs</a></li>
                     <li><a href="#specifications">Specifications</a></li>
@@ -104,6 +105,11 @@
                                 <div class="feature-icon">&#128190;</div>
                                 <h4>Batch Download</h4>
                                 <p>Download individual, selected, or all GIFs at once</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#9986;</div>
+                                <h4>Video Cropping</h4>
+                                <p>Select a region of your video to focus on before processing</p>
                             </div>
                             <div class="feature-card">
                                 <div class="feature-icon">&#128451;</div>
@@ -238,9 +244,83 @@
                     </div>
                 </section>
 
-                <!-- Step 3: Processing -->
+                <!-- Step 3: Crop Region -->
+                <section id="crop-region" class="guide-section">
+                    <h2>&#9986; Step 3: Crop Region (Optional)</h2>
+                    <div class="section-content">
+                        <p>After uploading, you'll see the <strong>Crop Region</strong> interface. This allows you to select a specific area of your video to focus on. All generated GIFs will use this cropped area.</p>
+
+                        <h3>Crop Interface Elements</h3>
+                        <table class="specs-table">
+                            <tr>
+                                <td><strong>Thumbnail Strip</strong></td>
+                                <td>Preview frames from different points in your video. Click to switch between them while selecting your crop area.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Crop Canvas</strong></td>
+                                <td>The main preview area where you draw your crop selection by clicking and dragging.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Crop Info</strong></td>
+                                <td>Shows the dimensions and position of your selected crop area in pixels.</td>
+                            </tr>
+                        </table>
+
+                        <h3>How to Crop</h3>
+                        <div class="step-instructions">
+                            <div class="step-number">1</div>
+                            <div class="step-details">
+                                <h4>Preview Thumbnails</h4>
+                                <p>Click on different thumbnails to find a frame that best represents the area you want to crop. The crop selection persists across thumbnails.</p>
+                            </div>
+                        </div>
+                        <div class="step-instructions">
+                            <div class="step-number">2</div>
+                            <div class="step-details">
+                                <h4>Draw Crop Selection</h4>
+                                <p>Click and drag on the canvas to draw a rectangle around the area you want to keep. The area outside your selection will be dimmed.</p>
+                            </div>
+                        </div>
+                        <div class="step-instructions">
+                            <div class="step-number">3</div>
+                            <div class="step-details">
+                                <h4>Confirm or Skip</h4>
+                                <p>Click <strong>"Start Processing"</strong> to use your crop, <strong>"Use Full Frame"</strong> to skip cropping, or <strong>"Reset Crop"</strong> to clear and try again.</p>
+                            </div>
+                        </div>
+
+                        <h3>Action Buttons</h3>
+                        <div class="download-options">
+                            <div class="download-option">
+                                <div class="option-icon">&#128260;</div>
+                                <h4>Reset Crop</h4>
+                                <p>Clears your current crop selection so you can draw a new one.</p>
+                            </div>
+                            <div class="download-option">
+                                <div class="option-icon">&#128444;</div>
+                                <h4>Use Full Frame</h4>
+                                <p>Skips cropping entirely and processes the full video frame.</p>
+                            </div>
+                            <div class="download-option">
+                                <div class="option-icon">&#9989;</div>
+                                <h4>Start Processing</h4>
+                                <p>Begins GIF generation with your current crop selection (or full frame if no crop).</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <strong>&#128161; Tip:</strong> Cropping is great for removing black bars, focusing on a specific person or object, or trimming unwanted edges from your video.
+                        </div>
+
+                        <div class="highlight-box">
+                            <strong>&#128204; Note:</strong> Crop dimensions are automatically adjusted to even numbers for video codec compatibility. Minimum crop size is 64x64 pixels.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 4: Processing -->
                 <section id="processing" class="guide-section">
-                    <h2>&#9881; Step 3: Processing</h2>
+                    <h2>&#9881; Step 4: Processing</h2>
                     <div class="section-content">
                         <p>After clicking "Process Video", Gifomatic performs several operations:</p>
 
@@ -282,9 +362,9 @@
                     </div>
                 </section>
 
-                <!-- Step 4: Browse GIFs -->
+                <!-- Step 5: Browse GIFs -->
                 <section id="browse-gifs" class="guide-section">
-                    <h2>&#128444; Step 4: Browse GIFs</h2>
+                    <h2>&#128444; Step 5: Browse GIFs</h2>
                     <div class="section-content">
                         <p>Once processing begins, GIFs appear in a responsive grid layout. The interface has two tabs:</p>
 
@@ -310,9 +390,9 @@
                     </div>
                 </section>
 
-                <!-- Step 5: Select GIFs -->
+                <!-- Step 6: Select GIFs -->
                 <section id="select-gifs" class="guide-section">
-                    <h2>&#9989; Step 5: Select GIFs</h2>
+                    <h2>&#9989; Step 6: Select GIFs</h2>
                     <div class="section-content">
                         <h3>Selection Methods</h3>
 
@@ -343,9 +423,9 @@
                     </div>
                 </section>
 
-                <!-- Step 6: Merge GIFs -->
+                <!-- Step 7: Merge GIFs -->
                 <section id="merge-gifs" class="guide-section">
-                    <h2>&#128279; Step 6: Merge GIFs</h2>
+                    <h2>&#128279; Step 7: Merge GIFs</h2>
                     <div class="section-content">
                         <p>The merge feature combines multiple GIFs into one continuous animation, playing them in sequence.</p>
 
@@ -378,9 +458,9 @@
                     </div>
                 </section>
 
-                <!-- Step 7: Download -->
+                <!-- Step 8: Download -->
                 <section id="download" class="guide-section">
-                    <h2>&#128229; Step 7: Download</h2>
+                    <h2>&#128229; Step 8: Download</h2>
                     <div class="section-content">
                         <h3>Download Options</h3>
 
@@ -623,6 +703,11 @@
                         <div class="faq-item">
                             <h4>Q: Can I change the GIF quality settings?</h4>
                             <p><strong>A:</strong> Yes! Use the "GIF Settings" panel before processing to adjust duration (1-30s), width (320-1920px), FPS (5-30), and scene sensitivity.</p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4>Q: Can I crop my video before creating GIFs?</h4>
+                            <p><strong>A:</strong> Yes! After uploading, you'll see a crop interface where you can select a region of your video. All GIFs will be generated from the cropped area. You can also skip cropping to use the full frame.</p>
                         </div>
 
                         <div class="faq-item">

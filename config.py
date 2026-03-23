@@ -133,6 +133,19 @@ class Config:
     DEFAULT_GIF_WIDTH = get_env_int('DEFAULT_GIF_WIDTH', 480)
 
     # ==========================================================================
+    # CROP PREVIEW SETTINGS
+    # ==========================================================================
+
+    # Number of thumbnail frames to extract for crop preview
+    THUMBNAIL_COUNT = get_env_int('THUMBNAIL_COUNT', 4)
+
+    # Width of thumbnail images in pixels
+    THUMBNAIL_WIDTH = get_env_int('THUMBNAIL_WIDTH', 640)
+
+    # Minimum crop region size in pixels
+    MIN_CROP_SIZE = get_env_int('MIN_CROP_SIZE', 64)
+
+    # ==========================================================================
     # DIRECTORIES
     # ==========================================================================
 

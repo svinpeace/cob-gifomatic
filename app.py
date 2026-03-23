@@ -13,7 +13,10 @@ from functools import wraps
 from flask import Flask, render_template, request, jsonify, Response, send_from_directory, abort
 
 from config import config
-from video_processor import process_video, merge_gifs_grid
+from video_processor import (
+    process_video, merge_gifs_grid, get_video_metadata,
+    extract_thumbnails, validate_crop_settings
+)
 
 app = Flask(__name__)
 
@@ -154,6 +157,21 @@ def is_safe_filename(filename):
         return False
     # Must be a valid filename pattern
     if not re.match(r'^[a-zA-Z0-9_\-]+\.(gif|GIF)$', filename):
+        return False
+    return True
+
+
+def is_safe_output_filename(filename):
+    """Check if filename is safe for output files (GIFs and thumbnails)."""
+    if not filename:
+        return False
+    # Check for path separators and traversal patterns
+    if any(c in filename for c in ['/', '\\', '\x00']):
+        return False
+    if '..' in filename:
+        return False
+    # Must be a valid filename pattern (gif or jpg for thumbnails)
+    if not re.match(r'^[a-zA-Z0-9_\-]+\.(gif|GIF|jpg|JPG|jpeg|JPEG)$', filename):
         return False
     return True
 
@@ -433,7 +451,7 @@ def upload_video():
     settings = {
         'max_duration': max(1.0, min(30.0, max_duration)),
         'fps': max(5, min(30, fps)),
-        'width': max(240, min(1920, width)),
+        'width': width if width == 0 else max(240, min(1920, width)),
         'threshold': max(10, min(60, threshold))
     }
 
@@ -526,6 +544,236 @@ def upload_video():
         # Limit cache size
         if len(video_cache) > MAX_JOBS_STORED:
             # Remove oldest entries (first in dict)
+            keys_to_remove = list(video_cache.keys())[:len(video_cache) - MAX_JOBS_STORED]
+            for key in keys_to_remove:
+                del video_cache[key]
+
+    save_cache()
+
+    # Start processing in background thread
+    thread = threading.Thread(
+        target=process_video_task,
+        args=(job_id, video_path, job_output_dir, settings)
+    )
+    thread.daemon = True
+    thread.start()
+
+    return jsonify({'job_id': job_id})
+
+
+@app.route('/upload-preview', methods=['POST'])
+@rate_limit(upload=True)
+def upload_preview():
+    """Handle video upload and return metadata + thumbnails for crop selection."""
+    if 'video' not in request.files:
+        return jsonify({'error': 'No video file provided'}), 400
+
+    file = request.files['video']
+
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({'error': 'Invalid file type. Allowed: MP4, AVI, MOV, MKV, WebM, FLV, WMV'}), 400
+
+    # Validate magic bytes
+    if not validate_video_magic_bytes(file.stream):
+        return jsonify({'error': 'Invalid video file format'}), 400
+
+    # Generate unique job ID
+    job_id = str(uuid.uuid4())
+
+    # Save the uploaded file with safe filename
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    video_filename = f"{job_id}.{ext}"
+    video_path = os.path.join(UPLOAD_FOLDER, video_filename)
+
+    try:
+        file.save(video_path)
+    except (IOError, OSError) as e:
+        log(f"Failed to save uploaded file: {sanitize_error_message(e)}")
+        return jsonify({'error': 'Failed to save uploaded file'}), 500
+
+    log(f"Uploaded for preview: {file.filename} -> {video_filename}")
+
+    # Get video metadata
+    metadata = get_video_metadata(video_path)
+    if not metadata:
+        # Clean up file on failure
+        try:
+            os.remove(video_path)
+        except OSError:
+            pass
+        return jsonify({'error': 'Could not read video metadata. File may be corrupted.'}), 400
+
+    # Create output directory for this job (for thumbnails)
+    job_output_dir = os.path.join(OUTPUT_FOLDER, job_id)
+    try:
+        os.makedirs(job_output_dir, exist_ok=True)
+    except OSError as e:
+        log(f"Failed to create output directory: {sanitize_error_message(e)}")
+        try:
+            os.remove(video_path)
+        except OSError:
+            pass
+        return jsonify({'error': 'Failed to create output directory'}), 500
+
+    # Extract thumbnails
+    thumbnail_count = config.THUMBNAIL_COUNT
+    thumbnail_width = config.THUMBNAIL_WIDTH
+    thumbnails = extract_thumbnails(video_path, job_output_dir, count=thumbnail_count, width=thumbnail_width)
+
+    # Build thumbnail URLs
+    thumbnail_data = []
+    for thumb in thumbnails:
+        thumbnail_data.append({
+            'url': f"/output/{job_id}/{thumb['filename']}",
+            'timestamp': thumb['timestamp']
+        })
+
+    # Store video path for later processing
+    with jobs_lock:
+        job_video_paths[job_id] = video_path
+
+    log(f"Preview ready: {job_id} ({metadata['width']}x{metadata['height']}, {len(thumbnail_data)} thumbnails)")
+
+    return jsonify({
+        'job_id': job_id,
+        'video': {
+            'width': metadata['width'],
+            'height': metadata['height'],
+            'duration': round(metadata['duration'], 2),
+            'fps': metadata['fps']
+        },
+        'thumbnails': thumbnail_data
+    })
+
+
+@app.route('/start-processing', methods=['POST'])
+@rate_limit()
+def start_processing():
+    """Start processing a previously uploaded video with settings and optional crop."""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    job_id = data.get('job_id')
+
+    # Validate job_id
+    if not job_id or not is_valid_uuid(job_id):
+        return jsonify({'error': 'Invalid job ID'}), 400
+
+    # Check if video file exists
+    with jobs_lock:
+        video_path = job_video_paths.get(job_id)
+
+    if not video_path or not os.path.exists(video_path):
+        return jsonify({'error': 'Video file not found. Please re-upload.'}), 404
+
+    # Check concurrent job limit
+    with jobs_lock:
+        if len(active_jobs) >= MAX_CONCURRENT_JOBS:
+            return jsonify({'error': 'Server busy. Please try again later.'}), 503
+
+    # Parse and validate settings
+    settings_data = data.get('settings', {})
+    try:
+        max_duration = float(settings_data.get('max_duration', 5.0))
+        fps = int(settings_data.get('fps', 10))
+        width = int(settings_data.get('width', 480))
+        threshold = int(settings_data.get('threshold', 30))
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid settings values'}), 400
+
+    settings = {
+        'max_duration': max(1.0, min(30.0, max_duration)),
+        'fps': max(5, min(30, fps)),
+        'width': width if width == 0 else max(240, min(1920, width)),
+        'threshold': max(10, min(60, threshold))
+    }
+
+    # Parse crop settings if provided
+    crop_data = data.get('crop')
+    if crop_data:
+        try:
+            crop = {
+                'x': int(crop_data.get('x', 0)),
+                'y': int(crop_data.get('y', 0)),
+                'w': int(crop_data.get('w', 0)),
+                'h': int(crop_data.get('h', 0))
+            }
+            settings['crop'] = crop
+            log(f"Crop settings: {crop['w']}x{crop['h']} at ({crop['x']},{crop['y']})")
+        except (ValueError, TypeError):
+            log("Invalid crop values, ignoring crop")
+
+    log(f"Starting processing job {job_id} with settings: {settings}")
+
+    # Compute file hash to check cache (include settings and crop in hash)
+    try:
+        with open(video_path, 'rb') as f:
+            file_hash = compute_file_hash(f)
+    except (IOError, OSError):
+        return jsonify({'error': 'Could not read video file'}), 500
+
+    settings_str = f"{settings['max_duration']}_{settings['fps']}_{settings['width']}_{settings['threshold']}"
+
+    # Include crop in cache key if present
+    if 'crop' in settings:
+        crop = settings['crop']
+        settings_str += f"_{crop['x']}_{crop['y']}_{crop['w']}_{crop['h']}"
+
+    cache_key = f"{file_hash}_{settings_str}"
+    log(f"Cache key: {cache_key[:16]}...")
+
+    # Check if already processed with same settings (thread-safe)
+    with cache_lock:
+        cached_job_id = video_cache.get(cache_key)
+
+    if cached_job_id and is_valid_uuid(cached_job_id) and cached_job_id != job_id:
+        original_gifs, merged_gifs = get_cached_gifs(cached_job_id)
+
+        if original_gifs:
+            log(f"Cache hit! Using existing job: {cached_job_id} ({len(original_gifs)} GIFs)")
+
+            with jobs_lock:
+                job_gifs[cached_job_id] = original_gifs
+
+            return jsonify({
+                'job_id': cached_job_id,
+                'cached': True,
+                'gifs': [{'url': g['url'], 'filename': g['filename']} for g in original_gifs],
+                'merged': [{'url': g['url'], 'filename': g['filename']} for g in (merged_gifs or [])]
+            })
+        else:
+            # Cache entry exists but GIFs are gone, remove from cache
+            log(f"Cache stale, removing: {cached_job_id}")
+            with cache_lock:
+                if cache_key in video_cache:
+                    del video_cache[cache_key]
+            save_cache()
+
+    # Create output directory for this job if it doesn't exist
+    job_output_dir = os.path.join(OUTPUT_FOLDER, job_id)
+    try:
+        os.makedirs(job_output_dir, exist_ok=True)
+    except OSError as e:
+        log(f"Failed to create output directory: {sanitize_error_message(e)}")
+        return jsonify({'error': 'Failed to create output directory'}), 500
+
+    # Initialize SSE queue for this job
+    with jobs_lock:
+        job_queues[job_id] = queue.Queue()
+        job_gifs[job_id] = []
+        active_jobs.add(job_id)
+
+    # Store in cache
+    with cache_lock:
+        video_cache[cache_key] = job_id
+
+        # Limit cache size
+        if len(video_cache) > MAX_JOBS_STORED:
             keys_to_remove = list(video_cache.keys())[:len(video_cache) - MAX_JOBS_STORED]
             for key in keys_to_remove:
                 del video_cache[key]
@@ -905,7 +1153,7 @@ def reprocess_job():
     settings = {
         'max_duration': max(1.0, min(30.0, max_duration)),
         'fps': max(5, min(30, fps)),
-        'width': max(240, min(1920, width)),
+        'width': width if width == 0 else max(240, min(1920, width)),
         'threshold': max(10, min(60, threshold))
     }
 
@@ -941,14 +1189,14 @@ def reprocess_job():
 
 
 @app.route('/output/<job_id>/<filename>')
-def serve_gif(job_id, filename):
-    """Serve generated GIF files."""
+def serve_output_file(job_id, filename):
+    """Serve generated GIF files and thumbnails."""
     # Validate job_id is a valid UUID
     if not is_valid_uuid(job_id):
         abort(404)
 
-    # Validate filename is safe
-    if not is_safe_filename(filename):
+    # Validate filename is safe (allows both GIFs and JPG thumbnails)
+    if not is_safe_output_filename(filename):
         abort(404)
 
     # Build path and verify it's within output folder

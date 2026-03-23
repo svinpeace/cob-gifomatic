@@ -11,6 +11,18 @@ let lightboxGifs = [];
 let currentEventSource = null;
 let isProcessing = false;
 
+// Crop state
+let videoMetadata = null;  // {width, height, duration, fps}
+let thumbnails = [];
+let currentThumbnailIndex = 0;
+let cropData = null;       // {x, y, w, h} in original video pixels
+let isDrawingCrop = false;
+let cropStartX = 0;
+let cropStartY = 0;
+let cropCanvas = null;
+let cropCtx = null;
+let currentThumbnailImg = null;
+
 // Default settings
 const defaultSettings = {
     maxDuration: 5,
@@ -136,6 +148,16 @@ const lightboxOverlay = document.querySelector('.lightbox-overlay');
 const previousJobsSection = document.getElementById('previous-jobs');
 const jobsList = document.getElementById('jobs-list');
 
+// Crop elements
+const cropSection = document.getElementById('crop-section');
+const cropContainer = document.querySelector('.crop-container');
+const cropCanvasEl = document.getElementById('crop-canvas');
+const cropDimensions = document.getElementById('crop-dimensions');
+const thumbnailContainers = document.querySelectorAll('.thumb-container');
+const resetCropBtn = document.getElementById('reset-crop-btn');
+const skipCropBtn = document.getElementById('skip-crop-btn');
+const confirmCropBtn = document.getElementById('confirm-crop-btn');
+
 // Settings elements
 const settingsSection = document.querySelector('.settings-section');
 const settingsToggle = document.getElementById('settings-toggle');
@@ -171,6 +193,17 @@ settingsHeader.addEventListener('click', toggleSettings);
 maxDurationInput.addEventListener('input', updateDurationDisplay);
 sceneThresholdInput.addEventListener('input', updateThresholdDisplay);
 presetButtons.forEach(btn => btn.addEventListener('click', applyPreset));
+
+// Crop events
+thumbnailContainers.forEach(container => {
+    container.addEventListener('click', () => {
+        const index = parseInt(container.dataset.index, 10);
+        selectThumbnail(index);
+    });
+});
+resetCropBtn.addEventListener('click', resetCrop);
+skipCropBtn.addEventListener('click', skipCropAndProcess);
+confirmCropBtn.addEventListener('click', confirmCropAndProcess);
 
 // Load existing jobs on page load
 loadExistingJobs();
@@ -260,24 +293,16 @@ async function handleUpload(e) {
 
     // Show progress
     progressSection.classList.remove('hidden');
-    gifSection.classList.remove('hidden');
     processBtn.disabled = true;
     progressText.textContent = 'Uploading video...';
 
-    // Create form data with settings
+    // Create form data
     const formData = new FormData();
     formData.append('video', file);
 
-    // Add settings to form data
-    const settings = getSettings();
-    formData.append('max_duration', settings.max_duration);
-    formData.append('width', settings.width);
-    formData.append('fps', settings.fps);
-    formData.append('threshold', settings.threshold);
-
     try {
-        // Upload video
-        const response = await fetch('/upload', {
+        // Upload video and get preview data
+        const response = await fetch('/upload-preview', {
             method: 'POST',
             body: formData
         });
@@ -296,16 +321,12 @@ async function handleUpload(e) {
         }
 
         currentJobId = data.job_id;
+        videoMetadata = data.video;
+        thumbnails = data.thumbnails || [];
 
-        // Check if cached
-        if (data.cached && data.gifs) {
-            progressText.textContent = 'Loading from cache...';
-            loadCachedGifs(data.gifs, data.merged || []);
-        } else {
-            progressText.textContent = 'Processing video, detecting scenes...';
-            // Start SSE connection
-            startEventStream(currentJobId);
-        }
+        // Hide progress, show crop UI
+        progressSection.classList.add('hidden');
+        showCropUI();
 
     } catch (error) {
         showError('Failed to upload video: ' + escapeHtml(error.message));
@@ -1023,11 +1044,20 @@ function resetState() {
     currentTab = 'original';
     isProcessing = false;
 
+    // Reset crop state
+    videoMetadata = null;
+    thumbnails = [];
+    currentThumbnailIndex = 0;
+    cropData = null;
+    isDrawingCrop = false;
+    currentThumbnailImg = null;
+
     gifGrid.innerHTML = '';
     mergedGrid.innerHTML = '';
 
     progressFill.style.width = '0%';
     progressSection.classList.add('hidden');
+    cropSection.classList.add('hidden');
 
     actionBar.classList.add('hidden');
     actionBar.classList.remove('visible');
@@ -1279,5 +1309,403 @@ async function deleteMergedGif(filename, element) {
 
     } catch (error) {
         alert('Delete failed: ' + escapeHtml(error.message));
+    }
+}
+
+// =============================================================================
+// CROP FUNCTIONALITY
+// =============================================================================
+
+function showCropUI() {
+    if (!videoMetadata || !thumbnails.length) {
+        showToast('No video data available', 'error');
+        return;
+    }
+
+    // Show crop section
+    cropSection.classList.remove('hidden');
+
+    // Load thumbnails into the strip
+    thumbnailContainers.forEach((container, index) => {
+        const img = container.querySelector('.thumb');
+        const timeSpan = container.querySelector('.thumb-time');
+
+        if (thumbnails[index]) {
+            img.src = thumbnails[index].url;
+            const timestamp = thumbnails[index].timestamp;
+            const minutes = Math.floor(timestamp / 60);
+            const seconds = Math.floor(timestamp % 60);
+            timeSpan.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            container.style.display = '';
+        } else {
+            container.style.display = 'none';
+        }
+    });
+
+    // Initialize crop canvas
+    initCropCanvas();
+
+    // Select first thumbnail
+    selectThumbnail(0);
+
+    // Update crop dimensions display
+    updateCropDimensions();
+}
+
+function initCropCanvas() {
+    cropCanvas = cropCanvasEl;
+    cropCtx = cropCanvas.getContext('2d');
+
+    // Set up canvas event listeners
+    setupCropCanvasEvents();
+}
+
+function selectThumbnail(index) {
+    if (index < 0 || index >= thumbnails.length) return;
+
+    currentThumbnailIndex = index;
+
+    // Update active state on thumbnail containers
+    thumbnailContainers.forEach((container, i) => {
+        if (i === index) {
+            container.classList.add('active');
+        } else {
+            container.classList.remove('active');
+        }
+    });
+
+    // Load the selected thumbnail into the canvas
+    loadThumbnailImage(thumbnails[index].url);
+}
+
+function loadThumbnailImage(url) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = function() {
+        currentThumbnailImg = img;
+
+        // Set canvas size to match image aspect ratio
+        // Scale to fit container while maintaining aspect ratio
+        const containerWidth = cropContainer.clientWidth;
+        const scale = containerWidth / img.width;
+        const displayHeight = img.height * scale;
+
+        cropCanvas.width = containerWidth;
+        cropCanvas.height = displayHeight;
+
+        // Draw the image
+        cropCtx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
+
+        // Redraw crop overlay if exists
+        if (cropData) {
+            drawCropOverlay();
+        }
+    };
+
+    img.onerror = function() {
+        console.error('Failed to load thumbnail:', url);
+    };
+
+    img.src = url;
+}
+
+function setupCropCanvasEvents() {
+    // Mouse events
+    cropCanvas.addEventListener('mousedown', startCrop);
+    cropCanvas.addEventListener('mousemove', updateCrop);
+    cropCanvas.addEventListener('mouseup', endCrop);
+    cropCanvas.addEventListener('mouseleave', endCrop);
+
+    // Touch events for mobile
+    cropCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    cropCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    cropCanvas.addEventListener('touchend', handleTouchEnd);
+}
+
+function getCanvasCoords(e) {
+    const rect = cropCanvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function startCrop(e) {
+    e.preventDefault();
+    isDrawingCrop = true;
+
+    const coords = getCanvasCoords(e);
+    cropStartX = coords.x;
+    cropStartY = coords.y;
+
+    // Reset crop data
+    cropData = null;
+    cropContainer.classList.remove('has-crop');
+}
+
+function updateCrop(e) {
+    if (!isDrawingCrop) return;
+    e.preventDefault();
+
+    const coords = getCanvasCoords(e);
+    const currentX = coords.x;
+    const currentY = coords.y;
+
+    // Calculate rectangle
+    const x = Math.min(cropStartX, currentX);
+    const y = Math.min(cropStartY, currentY);
+    const w = Math.abs(currentX - cropStartX);
+    const h = Math.abs(currentY - cropStartY);
+
+    // Store canvas coordinates temporarily
+    cropData = { canvasX: x, canvasY: y, canvasW: w, canvasH: h };
+
+    // Redraw
+    drawCropOverlay();
+}
+
+function endCrop(e) {
+    if (!isDrawingCrop) return;
+    isDrawingCrop = false;
+
+    // Finalize crop if valid size
+    if (cropData && cropData.canvasW > 10 && cropData.canvasH > 10) {
+        // Convert to original video pixels
+        const originalCrop = convertToOriginalPixels(cropData);
+        cropData = originalCrop;
+        cropContainer.classList.add('has-crop');
+        updateCropDimensions();
+    } else {
+        cropData = null;
+        cropContainer.classList.remove('has-crop');
+        updateCropDimensions();
+        // Redraw without crop
+        if (currentThumbnailImg) {
+            cropCtx.drawImage(currentThumbnailImg, 0, 0, cropCanvas.width, cropCanvas.height);
+        }
+    }
+}
+
+// Touch event handlers
+function handleTouchStart(e) {
+    if (e.touches.length === 1) {
+        startCrop(e);
+    }
+}
+
+function handleTouchMove(e) {
+    if (e.touches.length === 1) {
+        updateCrop(e);
+    }
+}
+
+function handleTouchEnd(e) {
+    endCrop(e);
+}
+
+function drawCropOverlay() {
+    if (!currentThumbnailImg || !cropCtx) return;
+
+    // Clear and redraw image
+    cropCtx.drawImage(currentThumbnailImg, 0, 0, cropCanvas.width, cropCanvas.height);
+
+    if (!cropData) return;
+
+    // Get canvas coordinates
+    let x, y, w, h;
+
+    if (cropData.canvasX !== undefined) {
+        // Still drawing, use canvas coordinates
+        x = cropData.canvasX;
+        y = cropData.canvasY;
+        w = cropData.canvasW;
+        h = cropData.canvasH;
+    } else {
+        // Finalized crop, convert back to canvas coordinates for display
+        const scale = cropCanvas.width / videoMetadata.width;
+        x = cropData.x * scale;
+        y = cropData.y * scale;
+        w = cropData.w * scale;
+        h = cropData.h * scale;
+    }
+
+    // Draw semi-transparent overlay on non-selected areas
+    cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+
+    // Top
+    cropCtx.fillRect(0, 0, cropCanvas.width, y);
+    // Bottom
+    cropCtx.fillRect(0, y + h, cropCanvas.width, cropCanvas.height - (y + h));
+    // Left
+    cropCtx.fillRect(0, y, x, h);
+    // Right
+    cropCtx.fillRect(x + w, y, cropCanvas.width - (x + w), h);
+
+    // Draw crop border
+    cropCtx.strokeStyle = '#6c5ce7';
+    cropCtx.lineWidth = 2;
+    cropCtx.strokeRect(x, y, w, h);
+
+    // Draw corner handles
+    const handleSize = 8;
+    cropCtx.fillStyle = '#6c5ce7';
+
+    // Top-left
+    cropCtx.fillRect(x - handleSize/2, y - handleSize/2, handleSize, handleSize);
+    // Top-right
+    cropCtx.fillRect(x + w - handleSize/2, y - handleSize/2, handleSize, handleSize);
+    // Bottom-left
+    cropCtx.fillRect(x - handleSize/2, y + h - handleSize/2, handleSize, handleSize);
+    // Bottom-right
+    cropCtx.fillRect(x + w - handleSize/2, y + h - handleSize/2, handleSize, handleSize);
+}
+
+function convertToOriginalPixels(canvasCrop) {
+    if (!videoMetadata || !cropCanvas) return null;
+
+    // Canvas is scaled to fit container
+    const scale = videoMetadata.width / cropCanvas.width;
+
+    let x = Math.round(canvasCrop.canvasX * scale);
+    let y = Math.round(canvasCrop.canvasY * scale);
+    let w = Math.round(canvasCrop.canvasW * scale);
+    let h = Math.round(canvasCrop.canvasH * scale);
+
+    // Ensure within video bounds
+    x = Math.max(0, Math.min(x, videoMetadata.width - 64));
+    y = Math.max(0, Math.min(y, videoMetadata.height - 64));
+    w = Math.min(w, videoMetadata.width - x);
+    h = Math.min(h, videoMetadata.height - y);
+
+    // Ensure even numbers for codec compatibility
+    x = x - (x % 2);
+    y = y - (y % 2);
+    w = w - (w % 2);
+    h = h - (h % 2);
+
+    // Minimum size check
+    if (w < 64 || h < 64) {
+        return null;
+    }
+
+    return { x, y, w, h };
+}
+
+function updateCropDimensions() {
+    if (cropData && cropData.w && cropData.h) {
+        cropDimensions.textContent = `Crop: ${cropData.w} x ${cropData.h} at (${cropData.x}, ${cropData.y})`;
+    } else if (videoMetadata) {
+        cropDimensions.textContent = `Full frame: ${videoMetadata.width} x ${videoMetadata.height}`;
+    } else {
+        cropDimensions.textContent = 'Full frame';
+    }
+}
+
+function resetCrop() {
+    cropData = null;
+    cropContainer.classList.remove('has-crop');
+    updateCropDimensions();
+
+    // Redraw canvas without crop overlay
+    if (currentThumbnailImg && cropCtx) {
+        cropCtx.drawImage(currentThumbnailImg, 0, 0, cropCanvas.width, cropCanvas.height);
+    }
+}
+
+function skipCropAndProcess() {
+    cropData = null;
+    startProcessingWithSettings();
+}
+
+function confirmCropAndProcess() {
+    startProcessingWithSettings();
+}
+
+async function startProcessingWithSettings() {
+    if (!currentJobId) {
+        showToast('No video uploaded', 'error');
+        return;
+    }
+
+    // Hide crop section
+    cropSection.classList.add('hidden');
+
+    // Show progress
+    progressSection.classList.remove('hidden');
+    gifSection.classList.remove('hidden');
+    progressText.textContent = 'Starting processing...';
+
+    // Get settings
+    const settings = getSettings();
+
+    // Build request body
+    const requestBody = {
+        job_id: currentJobId,
+        settings: {
+            max_duration: parseFloat(settings.max_duration),
+            fps: parseInt(settings.fps, 10),
+            width: parseInt(settings.width, 10),
+            threshold: parseInt(settings.threshold, 10)
+        }
+    };
+
+    // Add crop if defined
+    if (cropData && cropData.w && cropData.h) {
+        requestBody.crop = {
+            x: cropData.x,
+            y: cropData.y,
+            w: cropData.w,
+            h: cropData.h
+        };
+    }
+
+    try {
+        const response = await fetch('/start-processing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            showError(data.error);
+            return;
+        }
+
+        // Validate job_id
+        if (!data.job_id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.job_id)) {
+            showError('Invalid response from server');
+            return;
+        }
+
+        // Update job ID (might be different if cached)
+        currentJobId = data.job_id;
+
+        // Check if cached
+        if (data.cached && data.gifs) {
+            progressText.textContent = 'Loading from cache...';
+            loadCachedGifs(data.gifs, data.merged || []);
+        } else {
+            progressText.textContent = 'Processing video, detecting scenes...';
+            // Start SSE connection
+            startEventStream(currentJobId);
+        }
+
+    } catch (error) {
+        showError('Failed to start processing: ' + escapeHtml(error.message));
     }
 }
